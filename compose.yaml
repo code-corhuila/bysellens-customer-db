@@ -1,0 +1,19 @@
+services:
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:?Configure MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:?Configure MONGO_PASSWORD}
+    volumes:
+      - customer-mongodata:/data/db
+    ports:
+      - "127.0.0.1:${MONGO_PORT:-27018}:27017"
+    healthcheck:
+      test: [CMD-SHELL, 'mongosh --quiet --host localhost -u "$${MONGO_INITDB_ROOT_USERNAME}" -p "$${MONGO_INITDB_ROOT_PASSWORD}" --authenticationDatabase admin --eval "db.adminCommand({ping:1}).ok" | grep 1']
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  customer-mongodata:
