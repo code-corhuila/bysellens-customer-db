@@ -1,21 +1,21 @@
 # Customer: MongoDB
 
-Customer utiliza MongoDB 7 y la base de datos `customer`. La aplicación administra las colecciones; no existe un script de creación de esquema ni un seed de clientes en el proyecto original.
+Customer uses MongoDB 7 and the `customer` database. The application manages the collections; the original project has no schema creation script or customer seed.
 
-| Colección | Uso |
+| Collection | Purpose |
 | --- | --- |
-| `clientes` | Documentos con `_id` numérico, `nombre`, `telefono`, `email`, `direccion` y `activo`. La eliminación es lógica. |
-| `counters` | Documento `_id: "clientes"` con `seq`, usado para asignar identificadores numéricos de forma atómica. |
-| `migration_status` | Documento `_id: "postgres_customer_v1"` que registra la finalización de la migración desde PostgreSQL. |
+| `clientes` | Documents with numeric `_id`, `nombre`, `telefono`, `email`, `direccion`, and `activo`. Deletion is logical. |
+| `counters` | A document with `_id: "clientes"` and `seq`, used to assign numeric identifiers atomically. |
+| `migration_status` | A document with `_id: "postgres_customer_v1"` recording completion of the PostgreSQL migration. |
 
-MongoDB crea el índice único de `_id` por colección. El código de Customer no define índices adicionales para MongoDB. No se incluyen datos de ejemplo ni se inserta el marcador de migración automáticamente.
+MongoDB creates a unique `_id` index for each collection. Customer's code defines no additional MongoDB indexes. No sample data is included, and the migration marker is not inserted automatically.
 
-## Servicio independiente
+## Standalone service
 
-Configure `MONGO_USER` y `MONGO_PASSWORD` mediante variables de entorno o un archivo `.env` local no versionado. Después ejecute `docker compose up -d`; el servicio publica MongoDB únicamente en `127.0.0.1:27018` por defecto. `MONGO_PORT` permite elegir otro puerto. La base de autenticación del usuario inicial es `admin`; Customer debe configurar `MONGO_DATABASE=customer` y las mismas credenciales.
+Set `MONGO_USER` and `MONGO_PASSWORD` using environment variables or an untracked local `.env` file. Then run `docker compose up -d`; the service exposes MongoDB only on `127.0.0.1:27018` by default. Use `MONGO_PORT` to choose another port. The initial user's authentication database is `admin`; Customer must set `MONGO_DATABASE=customer` and use the same credentials.
 
-El volumen `customer-mongodata` conserva los datos. Las credenciales de inicialización solo se aplican al crear un volumen nuevo.
+The `customer-mongodata` volume persists data. Initialization credentials apply only when a new volume is created.
 
-## Migración de clientes existentes
+## Migrating existing customers
 
-La migración desde PostgreSQL se implementa en Customer API (`CustomerMigration`) y debe ejecutarse por separado bajo su procedimiento de despliegue. Lee los clientes existentes, conserva sus identificadores y detecta conflictos. El marcador de `migration_status` solo debe crearse al finalizar esa migración; sin él, Customer rechaza el arranque normal por defecto. Este repositorio no ejecuta migraciones ni modifica la base existente.
+The PostgreSQL migration is implemented in Customer API (`CustomerMigration`) and must be run separately using its deployment procedure. It reads existing customers, preserves their identifiers, and detects conflicts. The `migration_status` marker must only be created when that migration finishes; without it, Customer rejects normal startup by default. This repository does not run migrations or modify the existing database.
